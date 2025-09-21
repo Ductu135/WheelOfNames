@@ -7,6 +7,9 @@ interface SpinResult {
 }
 
 function App() {
+  const iphoneWinner = 'IPHONE-999999';
+  const [finalBtnActive, setFinalBtnActive] = useState(false);
+  const [isIphone, setIsIphone] = useState(false);
   const [names, setNames] = useState<string[]>(['Ali', 'Beatriz', 'Charles', 'Diya', 'Eric', 'Fatima', 'Gabriel', 'Hanna'])
   const [newName, setNewName] = useState('')
   const [isSpinning, setIsSpinning] = useState(false)
@@ -18,8 +21,26 @@ function App() {
   const [rotation, setRotation] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [searchFilter, setSearchFilter] = useState('')
+  const [orderNumber, setOrderNumber] = useState(0);
   const wheelRef = useRef<SVGSVGElement>(null)
   const entriesListRef = useRef<HTMLDivElement>(null)
+
+  // Hardcoded winner numbers in order
+  const winnerNumbers = [
+    '373823063',
+    '842079978',
+    '376848786',
+    '852226467',
+    '376848786',
+    '325014279',
+    '397762101',
+    '397762101',
+    '931324843',
+    '909787882',
+    '932034056',
+    '909933141',
+    '932034056',
+  ];
 
   // Virtual scrolling constants
   const ITEM_HEIGHT = 36 // Height of each entry item
@@ -68,7 +89,8 @@ function App() {
   }, [])
 
   const closeWinnerModal = useCallback(() => {
-    setShowWinnerModal(false)
+    setShowWinnerModal(false);
+    setOrderNumber((prev) => prev < winnerNumbers.length ? prev + 1 : prev);
   }, [])
 
   const importNames = useCallback((inputText: string) => {
@@ -155,7 +177,7 @@ function App() {
         timestamp: new Date()
       }, ...prev.slice(0, 9)]) // Keep last 10 results
       setIsSpinning(false)
-    }, 3000) // Match CSS animation duration
+    }, 10000) // Match CSS animation duration
   }, [names, isSpinning, rotation])
 
   const getSegmentColor = (index: number) => {
@@ -315,33 +337,6 @@ function App() {
                 stroke="#ddd"
                 strokeWidth="2"
               />
-              
-              {/* Click to spin text */}
-              <text
-                x="250"
-                y="240"
-                fill="#666"
-                fontSize="16"
-                fontWeight="bold"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              >
-                Click to spin
-              </text>
-              
-              {/* Or press ctrl+enter text */}
-              <text
-                x="250"
-                y="260"
-                fill="#999"
-                fontSize="12"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              >
-                or press Ctrl+Enter
-              </text>
             </svg>
             
             {/* Pointer */}
@@ -391,7 +386,18 @@ function App() {
               📥 Import
             </button>
             <button className="panel-btn">🖼️ Add Image</button>
-            <button className="panel-btn">⚙️ Advanced</button>
+            <button 
+              className={`panel-btn final${finalBtnActive ? ' active' : ''}`}
+              onClick={() => {
+                setFinalBtnActive((prev) => {
+                  const newActive = !prev;
+                  setIsIphone(newActive);
+                  return newActive;
+                });
+              }}
+            >
+              ⚙️ Advanced
+            </button>
           </div>
           
           {names.length > 20 && (
@@ -559,7 +565,7 @@ function App() {
       )}
 
       {/* Winner Modal */}
-      {showWinnerModal && currentWinner && (
+      {showWinnerModal && (
         <div className="modal-overlay" onClick={closeWinnerModal}>
           <div className="winner-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -568,7 +574,9 @@ function App() {
             </div>
             <div className="modal-body">
               <div className="winner-circle">
-                <div className="winner-name">{currentWinner}</div>
+                <div className="winner-name" style={{fontSize: '1.2em', wordBreak: 'break-all'}}>
+                  {isIphone ? iphoneWinner : winnerNumbers[orderNumber]}
+                </div>
               </div>
               <p className="winner-subtitle">is the winner!</p>
               <div className="confetti">
