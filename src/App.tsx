@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import './App.css'
 
 interface SpinResult {
@@ -12,9 +12,49 @@ function App() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [currentWinner, setCurrentWinner] = useState<string | null>(null)
   const [showWinnerModal, setShowWinnerModal] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [importText, setImportText] = useState('')
   const [spinHistory, setSpinHistory] = useState<SpinResult[]>([])
   const [rotation, setRotation] = useState(0)
+  const [scrollTop, setScrollTop] = useState(0)
+  const [searchFilter, setSearchFilter] = useState('')
   const wheelRef = useRef<SVGSVGElement>(null)
+  const entriesListRef = useRef<HTMLDivElement>(null)
+
+  // Virtual scrolling constants
+  const ITEM_HEIGHT = 36 // Height of each entry item
+  const CONTAINER_HEIGHT = 400 // Max height of entries list
+  const BUFFER_ITEMS = 5 // Extra items to render for smooth scrolling
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
+
+  // Filter names based on search
+  const filteredNames = useMemo(() => {
+    if (!searchFilter.trim()) return names
+    return names.filter(name => 
+      name.toLowerCase().includes(searchFilter.toLowerCase())
+    )
+  }, [names, searchFilter])
+
+  // Calculate visible items for virtual scrolling (using filtered names)
+  const virtualizedItems = useMemo(() => {
+    const namesToUse = filteredNames
+    if (namesToUse.length <= 50) {
+      // For small lists, render all items
+      return namesToUse.map((name, index) => ({ name, index }))
+    }
+
+    const visibleItems = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT)
+    const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER_ITEMS)
+    const endIndex = Math.min(namesToUse.length, startIndex + visibleItems + BUFFER_ITEMS * 2)
+    
+    return namesToUse.slice(startIndex, endIndex).map((name, i) => ({
+      name,
+      index: startIndex + i
+    }))
+  }, [filteredNames, scrollTop, CONTAINER_HEIGHT, ITEM_HEIGHT, BUFFER_ITEMS])
 
   const addName = useCallback(() => {
     if (newName.trim() && !names.includes(newName.trim())) {
@@ -30,6 +70,49 @@ function App() {
   const closeWinnerModal = useCallback(() => {
     setShowWinnerModal(false)
   }, [])
+
+  const importNames = useCallback((inputText: string) => {
+    if (!inputText.trim()) return
+    
+    // Split by spaces and filter out empty strings
+    const newNames = inputText
+      .trim()
+      .split(/\s+/) // Split by one or more whitespace characters
+      .filter(name => name.length > 0) // Remove empty strings
+      .filter(name => !names.includes(name)) // Remove duplicates
+    
+    if (newNames.length > 0) {
+      // For very large imports, batch the updates to prevent UI freezing
+      if (newNames.length > 500) {
+        const batchSize = 100
+        let currentBatch = 0
+        
+        const processBatch = () => {
+          const start = currentBatch * batchSize
+          const end = Math.min(start + batchSize, newNames.length)
+          const batch = newNames.slice(start, end)
+          
+          setNames(prev => [...prev, ...batch])
+          currentBatch++
+          
+          if (end < newNames.length) {
+            // Continue processing in next frame
+            setTimeout(processBatch, 0)
+          }
+        }
+        
+        processBatch()
+      } else {
+        setNames(prev => [...prev, ...newNames])
+      }
+    }
+  }, [names])
+
+  const handleImport = useCallback(() => {
+    importNames(importText)
+    setImportText('')
+    setShowImportDialog(false)
+  }, [importNames, importText])
 
   // Handle keyboard events for modal
   useEffect(() => {
@@ -76,18 +159,27 @@ function App() {
   }, [names, isSpinning, rotation])
 
   const getSegmentColor = (index: number) => {
-    // Colors matching the wheelofnames.com design
+    // Enhanced color palette for better distribution with many segments
     const colors = [
-      '#4285F4', // Blue (for Ali)
-      '#34A853', // Green (for Hanna) 
-      '#FBBC04', // Yellow/Orange (for Gabriel)
-      '#EA4335', // Red (for Fatima)
-      '#4285F4', // Blue (for Eric)
-      '#34A853', // Green (for Diya)
-      '#FBBC04', // Yellow/Orange (for Charles)
-      '#EA4335'  // Red (for Beatriz)
+      '#4285F4', '#34A853', '#FBBC04', '#EA4335', // Google colors
+      '#9C27B0', '#FF5722', '#607D8B', '#795548', // Material colors
+      '#E91E63', '#00BCD4', '#8BC34A', '#FF9800',
+      '#673AB7', '#009688', '#CDDC39', '#FFC107',
+      '#3F51B5', '#4CAF50', '#FFEB3B', '#FF5722',
+      '#2196F3', '#4CAF50', '#FFEB3B', '#F44336'
     ]
-    return colors[index % colors.length]
+    
+    // For very large numbers of segments, create more color variations
+    if (index < colors.length) {
+      return colors[index]
+    }
+    
+    // Generate colors using HSL for infinite variety
+    const hue = (index * 137.508) % 360 // Golden angle for good distribution
+    const saturation = 70 + (index % 3) * 10 // Vary saturation 70-90%
+    const lightness = 45 + (index % 4) * 5   // Vary lightness 45-60%
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`
   }
 
   return (
@@ -154,37 +246,62 @@ function App() {
                   `Z`
                 ].join(' ')
                 
+                // Calculate text properties based on number of segments
+                const shouldShowText = names.length <= 100 // Only show text for 100 or fewer names
+                const strokeWidth = names.length > 500 ? 1 : names.length > 200 ? 2 : 3
+                
+                let fontSize = 18
+                let textRadius = 140
+                
+                if (names.length > 50) {
+                  fontSize = Math.max(8, 18 - (names.length - 50) * 0.1)
+                  textRadius = 140
+                }
+                if (names.length > 100) {
+                  fontSize = Math.max(6, 12 - (names.length - 100) * 0.02)
+                }
+                
                 // Calculate text position and rotation
                 const textAngle = startAngle + segmentAngle / 2
                 const textRad = (textAngle * Math.PI) / 180
-                const textRadius = 140
                 const textX = 250 + textRadius * Math.cos(textRad)
                 const textY = 250 + textRadius * Math.sin(textRad)
                 
+                // Truncate long names for smaller segments
+                let displayName = name
+                if (names.length > 50 && name.length > 8) {
+                  displayName = name.substring(0, 8) + '...'
+                }
+                if (names.length > 200 && name.length > 5) {
+                  displayName = name.substring(0, 5) + '...'
+                }
+                
                 return (
-                  <g key={name}>
+                  <g key={`${name}-${index}`}>
                     <path
                       d={pathData}
                       fill={getSegmentColor(index)}
                       stroke="#fff"
-                      strokeWidth="3"
+                      strokeWidth={strokeWidth}
                     />
-                    <text
-                      x={textX}
-                      y={textY}
-                      fill="white"
-                      fontSize="18"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      transform={`rotate(${textAngle}, ${textX}, ${textY})`}
-                      style={{
-                        filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))',
-                        fontFamily: 'Arial, sans-serif'
-                      }}
-                    >
-                      {name}
-                    </text>
+                    {shouldShowText && (
+                      <text
+                        x={textX}
+                        y={textY}
+                        fill="white"
+                        fontSize={fontSize}
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        transform={`rotate(${textAngle}, ${textX}, ${textY})`}
+                        style={{
+                          filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))',
+                          fontFamily: 'Arial, sans-serif'
+                        }}
+                      >
+                        {displayName}
+                      </text>
+                    )}
                   </g>
                 )
               })}
@@ -270,23 +387,81 @@ function App() {
           <div className="panel-controls">
             <button className="panel-btn">🔀 Shuffle</button>
             <button className="panel-btn">📝 Sort</button>
+            <button className="panel-btn" onClick={() => setShowImportDialog(true)}>
+              📥 Import
+            </button>
             <button className="panel-btn">🖼️ Add Image</button>
             <button className="panel-btn">⚙️ Advanced</button>
           </div>
           
-          <div className="entries-list">
-            {names.map((name, index) => (
-              <div key={index} className="entry-item">
-                <span className="entry-name">{name}</span>
-                <button 
-                  onClick={() => removeName(name)}
-                  className="entry-remove"
-                  title="Remove entry"
-                >
-                  ×
-                </button>
+          {names.length > 20 && (
+            <div className="search-container">
+              <input
+                type="text"
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                placeholder="Search entries..."
+                className="search-input"
+              />
+            </div>
+          )}
+          
+          <div 
+            className="entries-list"
+            ref={entriesListRef}
+            onScroll={handleScroll}
+            style={{
+              maxHeight: filteredNames.length > 50 ? `${CONTAINER_HEIGHT}px` : 'auto',
+              overflowY: filteredNames.length > 50 ? 'auto' : 'visible'
+            }}
+          >
+            {filteredNames.length > 50 ? (
+              // Virtual scrolling for large lists
+              <div style={{ height: `${filteredNames.length * ITEM_HEIGHT}px`, position: 'relative' }}>
+                {virtualizedItems.map(({ name, index }) => (
+                  <div 
+                    key={`${name}-${index}`}
+                    className="entry-item"
+                    style={{
+                      position: 'absolute',
+                      top: `${index * ITEM_HEIGHT}px`,
+                      left: 0,
+                      right: 0,
+                      height: `${ITEM_HEIGHT}px`
+                    }}
+                  >
+                    <span className="entry-name" title={name}>{name}</span>
+                    <button 
+                      onClick={() => removeName(name)}
+                      className="entry-remove"
+                      title="Remove entry"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              // Regular rendering for small lists
+              filteredNames.map((name, index) => (
+                <div key={`${name}-${index}`} className="entry-item">
+                  <span className="entry-name">{name}</span>
+                  <button 
+                    onClick={() => removeName(name)}
+                    className="entry-remove"
+                    title="Remove entry"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))
+            )}
+            
+            {searchFilter && filteredNames.length === 0 && (
+              <div className="no-results">
+                <p>No entries match "{searchFilter}"</p>
+              </div>
+            )}
           </div>
           
           <div className="add-entry">
@@ -331,6 +506,57 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Import Names Modal */}
+      {showImportDialog && (
+        <div className="modal-overlay" onClick={() => setShowImportDialog(false)}>
+          <div className="import-modal" onClick={e => e.stopPropagation()}>
+            <div className="import-header">
+              <h2>Import Names</h2>
+              <button className="close-btn" onClick={() => setShowImportDialog(false)}>×</button>
+            </div>
+            <div className="import-content">
+              <p>Paste names separated by spaces. Each name will be added to the wheel.</p>
+              <textarea
+                className="import-textarea"
+                placeholder="Enter names separated by spaces..."
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                rows={8}
+              />
+              <div className="import-preview">
+                {importText && (
+                  <div>
+                    <strong>Preview:</strong> {importText.split(/\s+/).filter(name => name.trim()).length} names will be added
+                    {importText.split(/\s+/).filter(name => name.trim()).length > 100 && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
+                        📊 Large dataset detected. Text will be hidden on wheel for better performance.
+                      </div>
+                    )}
+                    {importText.split(/\s+/).filter(name => name.trim()).length > 500 && (
+                      <div style={{ marginTop: '4px', fontSize: '12px', color: '#FBBC04' }}>
+                        ⚡ Import will be processed in batches for optimal performance.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="import-actions">
+              <button className="cancel-btn" onClick={() => setShowImportDialog(false)}>
+                Cancel
+              </button>
+              <button 
+                className="import-btn" 
+                onClick={handleImport}
+                disabled={!importText.trim()}
+              >
+                Import Names
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Winner Modal */}
       {showWinnerModal && currentWinner && (
