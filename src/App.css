@@ -14,13 +14,15 @@
 }
 
 .app-header {
-  background-color: #1976d2;
+  background-color: #3576e5;
   color: #fff;
-  padding: 8px 16px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #1565c0;
+  height: 54px;
+  border-bottom: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .header-left {
@@ -41,7 +43,10 @@
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 1.3em;
+  font-weight: 500;
+  margin-left: 8px;
+  color: #fff;
 }
 
 .header-right {
@@ -50,18 +55,24 @@
 }
 
 .header-btn {
-  background: #404040;
+  background: none;
   border: none;
-  color: white;
+  color: #fff;
+  font-size: 1em;
+  margin: 0 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 12px;
   border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
 }
 
 .header-btn:hover {
-  background: #505050;
+  background: #5997f3;
+  color: #fff;
+  border: none;
 }
 
 .app-main {
@@ -142,43 +153,43 @@
 
 .right-panel {
   width: 320px;
-  background-color: #2d2d2d;
-  border-left: 1px solid #404040;
+  background-color: #fff;
+  border-left: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
 }
 
 .panel-tabs {
   display: flex;
-  background-color: #404040;
-  border-bottom: 1px solid #505050;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
   position: relative;
 }
 
 .tab {
-  color: #fff;
+  color: #333;
   flex: 1;
   padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  border-right: 1px solid #505050;
+  border-right: 1px solid #e0e0e0;
   transition: background-color 0.2s;
 }
 
 .tab:hover {
-  background-color: #4a4a4a;
+  background-color: #eaeaea;
 }
 
 .tab.active {
-  background-color: #2d2d2d;
-  border-bottom: 2px solid #4a9eff;
+  background-color: #fff;
+  border-bottom: 2px solid #3576e5;
 }
 
 .tab-count {
-  background-color: #666;
-  color: white;
+  background-color: #e0e0e0;
+  color: #333;
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 10px;
@@ -193,28 +204,29 @@
 .hide-btn {
   background: none;
   border: none;
-  color: #999;
+  color: #666;
   padding: 12px;
   cursor: pointer;
   font-size: 14px;
 }
 
 .hide-btn:hover {
-  color: white;
-  background-color: #4a4a4a;
+  color: #333;
+  background-color: #f0f0f0;
 }
 
 .panel-controls {
   padding: 12px;
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid #404040;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
 }
 
 .panel-btn {
-  background: #404040;
-  border: none;
-  color: #ccc;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #333;
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 12px;
@@ -223,25 +235,27 @@
 }
 
 .panel-btn:hover {
-  background: #505050;
-  color: white;
+  background: #e8e8e8;
+  color: #000;
 }
 
 .panel-btn.final.active {
-  background: #505050;
-  color: #fff;
+  background: #f5f5f5;
+  color: #333;
+  border-color: #e0e0e0;
 }
 
 .search-container {
   padding: 8px 12px;
-  border-bottom: 1px solid #404040;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
 }
 
 .search-input {
   width: 100%;
-  background: #404040;
-  border: 1px solid #505050;
-  color: white;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #333;
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 12px;
@@ -250,7 +264,8 @@
 }
 
 .search-input:focus {
-  border-color: #4a9eff;
+  border-color: #3576e5;
+  box-shadow: 0 0 0 2px rgba(53, 118, 229, 0.1);
 }
 
 .search-input::placeholder {
@@ -273,6 +288,7 @@
   flex: 1;
   padding: 8px;
   overflow-y: auto;
+  background-color: #fff;
 }
 
 .entry-item {
@@ -281,11 +297,12 @@
   justify-content: space-between;
   padding: 8px 12px;
   margin-bottom: 2px;
-  background-color: #404040;
+  background-color: #f5f5f5;
   border-radius: 4px;
   transition: background-color 0.2s;
   height: 36px; /* Fixed height for virtual scrolling */
   box-sizing: border-box;
+  color: #000;
 }
 
 .entry-item:hover {
@@ -294,7 +311,7 @@
 
 .entry-name {
   flex: 1;
-  color: white;
+  color: #000;
   font-size: 14px;
 }
 
@@ -316,13 +333,17 @@
 .add-entry {
   padding: 12px;
   border-top: 1px solid #404040;
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  color: #000;
 }
 
 .entry-input {
   width: 100%;
-  background: #404040;
-  border: 1px solid #505050;
-  color: white;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #000;
   padding: 10px 12px;
   border-radius: 4px;
   font-size: 14px;
@@ -391,9 +412,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 6px 8px;
-  background-color: #404040;
+  background-color: #f5f5f5;
   border-radius: 3px;
   font-size: 13px;
+  color: #222;
 }
 
 .result-time {
