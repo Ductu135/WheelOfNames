@@ -21,9 +21,9 @@ function App() {
   const [rotation, setRotation] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [searchFilter, setSearchFilter] = useState('')
-  // Load orderNumber from localStorage if available
+  // Load orderNumber from sessionStorage if available
   const getInitialOrderNumber = () => {
-    const stored = localStorage.getItem('orderNumber');
+    const stored = sessionStorage.getItem('orderNumber');
     return stored !== null ? Number(stored) : 0;
   };
   const [orderNumber, setOrderNumber] = useState(getInitialOrderNumber());
@@ -97,7 +97,7 @@ function App() {
     setShowWinnerModal(false);
     setOrderNumber((prev) => {
       const newOrder = prev < winnerNumbers.length ? prev + 1 : prev;
-      localStorage.setItem('orderNumber', String(newOrder));
+      sessionStorage.setItem('orderNumber', String(newOrder));
       return newOrder;
     });
   }, [])
