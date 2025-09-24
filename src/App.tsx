@@ -13,7 +13,7 @@ function App() {
   const [names, setNames] = useState<string[]>(['Ali', 'Beatriz', 'Charles', 'Diya', 'Eric', 'Fatima', 'Gabriel', 'Hanna'])
   const [newName, setNewName] = useState('')
   const [isSpinning, setIsSpinning] = useState(false)
-  const [currentWinner, setCurrentWinner] = useState<string | null>(null)
+  // Removed unused currentWinner state
   const [showWinnerModal, setShowWinnerModal] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [importText, setImportText] = useState('')
@@ -161,7 +161,7 @@ function App() {
     if (names.length === 0 || isSpinning) return
 
     setIsSpinning(true)
-    setCurrentWinner(null)
+    // setCurrentWinner(null) removed
 
     // Random rotation between 5-10 full rotations plus random angle
     const minRotations = 5
@@ -179,7 +179,7 @@ function App() {
       const winnerIndex = Math.floor(normalizedAngle / segmentAngle)
       const winner = names[winnerIndex]
       
-      setCurrentWinner(winner)
+      // setCurrentWinner(winner) removed
       setShowWinnerModal(true)
       setSpinHistory(prev => [{
         winner,
