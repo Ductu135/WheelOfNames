@@ -21,7 +21,12 @@ function App() {
   const [rotation, setRotation] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [searchFilter, setSearchFilter] = useState('')
-  const [orderNumber, setOrderNumber] = useState(0);
+  // Load orderNumber from localStorage if available
+  const getInitialOrderNumber = () => {
+    const stored = localStorage.getItem('orderNumber');
+    return stored !== null ? Number(stored) : 0;
+  };
+  const [orderNumber, setOrderNumber] = useState(getInitialOrderNumber());
   const wheelRef = useRef<SVGSVGElement>(null)
   const entriesListRef = useRef<HTMLDivElement>(null)
 
@@ -90,7 +95,11 @@ function App() {
 
   const closeWinnerModal = useCallback(() => {
     setShowWinnerModal(false);
-    setOrderNumber((prev) => prev < winnerNumbers.length ? prev + 1 : prev);
+    setOrderNumber((prev) => {
+      const newOrder = prev < winnerNumbers.length ? prev + 1 : prev;
+      localStorage.setItem('orderNumber', String(newOrder));
+      return newOrder;
+    });
   }, [])
 
   const importNames = useCallback((inputText: string) => {
@@ -181,27 +190,14 @@ function App() {
   }, [names, isSpinning, rotation])
 
   const getSegmentColor = (index: number) => {
-    // Enhanced color palette for better distribution with many segments
+    // Only 4 colors for the wheel
     const colors = [
-      '#4285F4', '#34A853', '#FBBC04', '#EA4335', // Google colors
-      '#9C27B0', '#FF5722', '#607D8B', '#795548', // Material colors
-      '#E91E63', '#00BCD4', '#8BC34A', '#FF9800',
-      '#673AB7', '#009688', '#CDDC39', '#FFC107',
-      '#3F51B5', '#4CAF50', '#FFEB3B', '#FF5722',
-      '#2196F3', '#4CAF50', '#FFEB3B', '#F44336'
-    ]
-    
-    // For very large numbers of segments, create more color variations
-    if (index < colors.length) {
-      return colors[index]
-    }
-    
-    // Generate colors using HSL for infinite variety
-    const hue = (index * 137.508) % 360 // Golden angle for good distribution
-    const saturation = 70 + (index % 3) * 10 // Vary saturation 70-90%
-    const lightness = 45 + (index % 4) * 5   // Vary lightness 45-60%
-    
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+      '#4285F4', // blue
+      '#34A853', // green
+      '#FBBC04', // yellow
+      '#EA4335'  // red
+    ];
+    return colors[index % 4];
   }
 
   return (
@@ -396,7 +392,7 @@ function App() {
                 });
               }}
             >
-              ⚙️ Advanced
+              {finalBtnActive ? '🌐' : '⚙️'} Advanced
             </button>
           </div>
           
@@ -489,19 +485,13 @@ function App() {
             />
           </div>
           
-          {currentWinner && (
-            <div className="winner-announcement">
-              <h3>🎉 Winner: {currentWinner}! 🎉</h3>
-            </div>
-          )}
-          
           {spinHistory.length > 0 && (
             <div className="results-history">
               <h4>Recent Results</h4>
               <div className="results-list">
                 {spinHistory.slice(0, 5).map((result, index) => (
                   <div key={index} className="result-item">
-                    <strong>{result.winner}</strong>
+                    <strong>{winnerNumbers[orderNumber - index]}</strong>
                     <span className="result-time">
                       {result.timestamp.toLocaleTimeString()}
                     </span>
