@@ -384,6 +384,7 @@ function App() {
             <button className="panel-btn">🖼️ Add Image</button>
             <button 
               className={`panel-btn final${finalBtnActive ? ' active' : ''}`}
+              style={{ padding: '6px 2px' }}
               onClick={() => {
                 setFinalBtnActive((prev) => {
                   const newActive = !prev;
