@@ -7,7 +7,7 @@ interface SpinResult {
 }
 
 function App() {
-  const iphoneWinner = 'IPHONE-999999';
+  const iphoneWinner = '0366720382';
   const [finalBtnActive, setFinalBtnActive] = useState(false);
   const [isIphone, setIsIphone] = useState(false);
   const [names, setNames] = useState<string[]>(['Ali', 'Beatriz', 'Charles', 'Diya', 'Eric', 'Fatima', 'Gabriel', 'Hanna'])
@@ -21,8 +21,9 @@ function App() {
   const [rotation, setRotation] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [searchFilter, setSearchFilter] = useState('')
-  // Load orderNumber from sessionStorage if available
+  // Load orderNumber from sessionStorage only
   const getInitialOrderNumber = () => {
+    localStorage.removeItem('orderNumber'); // Clear localStorage entry
     const stored = sessionStorage.getItem('orderNumber');
     return stored !== null ? Number(stored) : 0;
   };
