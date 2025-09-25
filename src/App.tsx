@@ -32,21 +32,38 @@ function App() {
   const entriesListRef = useRef<HTMLDivElement>(null)
 
   // Hardcoded winner numbers in order
-  const winnerNumbers = [
-    '373823063',
-    '842079978',
-    '376848786',
-    '852226467',
-    '376848786',
-    '325014279',
-    '397762101',
-    '397762101',
-    '931324843',
-    '909787882',
-    '932034056',
-    '909933141',
-    '932034056',
-  ];
+const winnerNumbers = [
+  '945222568',
+  '928280259',
+  '908803898',
+  '931222238',
+  '931931352',
+  '905266266',
+  '987716887',
+  '914988989',
+  '918285828',
+  '772223679',
+  '909090984',
+  '869923541',
+  '797678268',
+  '918929821',
+  '374719526',
+  '971511140',
+  '767811929',
+  '983199137',
+  '976398395',
+  '393463101',
+  '979148200',
+  '904121493',
+  '915366180',
+  '379155270',
+  '972703222',
+  '878222922',
+  '983420876',
+  '868911798',
+  '832163588',
+  '345959228',
+];
 
   // Virtual scrolling constants
   const ITEM_HEIGHT = 36 // Height of each entry item
@@ -493,7 +510,7 @@ function App() {
               <div className="results-list">
                 {spinHistory.slice(0, 5).map((result, index) => (
                   <div key={index} className="result-item">
-                    <strong>{winnerNumbers[orderNumber - index]}</strong>
+                    <strong>{winnerNumbers[orderNumber - index - 1]}</strong>
                     <span className="result-time">
                       {result.timestamp.toLocaleTimeString()}
                     </span>
@@ -566,7 +583,7 @@ function App() {
             </div>
             <div className="modal-body">
               <div className="winner-circle">
-                <div className="winner-name" style={{fontSize: '1.2em', wordBreak: 'break-all'}}>
+                <div className="winner-name" style={{fontSize: '1.8em', wordBreak: 'break-all'}}>
                   {isIphone ? iphoneWinner : winnerNumbers[orderNumber]}
                 </div>
               </div>
